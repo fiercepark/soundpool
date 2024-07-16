@@ -133,6 +133,8 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         private lazy var soundpool = [AVAudioPlayer]()
         
         private lazy var streamsCount: Dictionary<Int, Int> = [Int: Int]()
+
+        private lazy var volumeStored: Dictionary<Int, Float> = [Int: Float]()
         
         private lazy var nowPlaying: Dictionary<Int, NowPlaying> = [Int: NowPlaying]()
         
@@ -216,7 +218,9 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                     
                     let nowPlayingData: NowPlaying
                     let streamId: Int = streamIdProvider.increment()
-                    
+
+                    audioPlayer.volume = volumeStored[0] ?? 1
+
                     let delegate = SoundpoolDelegate(pool: self, soundId: soundId, streamId: streamId)
                     audioPlayer.delegate = delegate
                     nowPlayingData =  NowPlaying(player: audioPlayer, delegate: delegate)
@@ -226,7 +230,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                         audioPlayer.enableRate = true
                         audioPlayer.rate = Float(rate)
                     }
-                    
+
                     if (audioPlayer.play()) {
                         streamsCount[soundId] = currentCount + 1
                         nowPlaying[streamId] = nowPlayingData
@@ -288,8 +292,8 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                     audioPlayer = playerByStreamId(streamId: streamId!)?.player
                 } else if (soundId != nil){
                     audioPlayer = playerBySoundId(soundId: soundId!)
+                    volumeStored[0] = Float(volume)
                 }
-                audioPlayer?.volume = Float(volume)
                 result(nil)
             case "setRate":
                 if (enableRate){
@@ -350,4 +354,3 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         }
     }
 }
-
