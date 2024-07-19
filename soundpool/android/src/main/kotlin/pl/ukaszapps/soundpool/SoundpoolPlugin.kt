@@ -114,6 +114,8 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
 
     private val loadingSoundsMap = HashMap<Int, Result>()
 
+    private val volumeSet = HashMap<Int, Float>()
+
     private inline fun ui(crossinline block: () -> Unit) {
         uiThreadHandler.post { block() }
     }
@@ -232,7 +234,7 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                 val rate: Double = arguments["rate"] as Double? ?: 1.0
                 val volumeInfo = volumeSettingsForSoundId(soundId = soundId)
                 runBg {
-                    val streamId = soundPool.play(soundId, volumeInfo.left, volumeInfo.right, 0,
+                    val streamId = soundPool.play(soundId, volumeSet[0] ?: 1.0f, volumeSet[0] ?: 1.0f, 0,
                             repeat, rate.toFloat())
                     ui {
                         result.success(streamId)
@@ -275,6 +277,7 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                 }
                 val volumeLeft: Double = arguments["volumeLeft"]!! as Double
                 val volumeRight: Double = arguments["volumeRight"]!! as Double
+                volumeSet[0] = volumeLeft.toFloat()
                 runBg {
                     streamId?.let {
                         soundPool.setVolume(it, volumeLeft.toFloat(), volumeRight.toFloat())
