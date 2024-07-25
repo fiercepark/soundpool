@@ -21,13 +21,13 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             let attributes = call.arguments as! NSDictionary
             
             initAudioSession(attributes)
-            
+    
             let maxStreams = attributes["maxStreams"] as! Int
             let enableRate = (attributes["ios_enableRate"] as? Bool) ?? true
             let wrapper = SoundpoolWrapper(maxStreams, enableRate)
             
             let index = counter.increment()
-            wrappers[index] = wrapper;
+            wrappers[index] = wrapper
             result(index)
         case "dispose":
             let attributes = call.arguments as! NSDictionary
@@ -107,7 +107,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             }
             do {
                 let session = AVAudioSession.sharedInstance()
-                try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers, .duckOthers])
+                try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
                 try session.setActive(true)
                 print("Audio session updated: category = '\(category)', mode = '\(mode)'.")
             } catch (let e) {
@@ -232,6 +232,8 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                         audioPlayer.enableRate = true
                         audioPlayer.rate = Float(rate)
                     }
+
+                    try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])
 
                     if (audioPlayer.play()) {
                         streamsCount[soundId] = currentCount + 1
