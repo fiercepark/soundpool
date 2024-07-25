@@ -106,7 +106,9 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 mode = .default
             }
             do {
-                try AVAudioSession.sharedInstance().setCategory(category, mode: mode)
+                let session = AVAudioSession.sharedInstance()
+                try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers, .duckOthers])
+                try session.setActive(true)
                 print("Audio session updated: category = '\(category)', mode = '\(mode)'.")
             } catch (let e) {
                 //do nothing

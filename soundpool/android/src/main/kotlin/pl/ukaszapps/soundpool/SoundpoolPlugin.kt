@@ -65,7 +65,7 @@ class SoundpoolPlugin : MethodCallHandler, FlutterPlugin {
                     else -> -1
                 }
                 if (streamType > -1) {
-                    val wrapper = SoundpoolWrapper(application, maxStreams, streamType)
+                    val wrapper = SoundpoolWrapper(application, maxStreams, AudioManager.STREAM_MUSIC)
                     val index = wrappers.size
                     wrappers.add(wrapper)
                     result.success(index)
@@ -133,15 +133,18 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
             AudioManager.STREAM_NOTIFICATION -> android.media.AudioAttributes.USAGE_NOTIFICATION
             else -> android.media.AudioAttributes.USAGE_GAME
         }
+
+        val attributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_GAME)  // 使用USAGE_GAME
+        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+        .build()
+
         SoundPool.Builder()
                 .setMaxStreams(maxStreams)
-                .setAudioAttributes(AudioAttributes.Builder().setLegacyStreamType
-                (streamType)
-                        .setUsage(usage)
-                        .build())
+                .setAudioAttributes(attributes)
                 .build()
     } else {
-        SoundPool(maxStreams, streamType, 1)
+        SoundPool(maxStreams, AudioManager.STREAM_MUSIC, 1)
     }.apply {
         setOnLoadCompleteListener { _, sampleId, status ->
             val resultCallback = loadingSoundsMap[sampleId]
