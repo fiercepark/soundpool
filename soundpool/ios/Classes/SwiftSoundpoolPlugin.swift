@@ -107,7 +107,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             }
             do {
                 let session = AVAudioSession.sharedInstance()
-                try session.setCategory(.ambient, options: [.mixWithOthers])
+                try session.setCategory(.playback, options: [.mixWithOthers])
                 try session.setActive(true)
                 print("Audio session updated: category = '\(category)', mode = '\(mode)'.")
             } catch (let e) {
@@ -153,7 +153,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 let rawSound = attributes["rawSound"] as! FlutterStandardTypedData
                 do {
                     let session = AVAudioSession.sharedInstance()
-                    try session.setCategory(.ambient, options: [.mixWithOthers])
+                    try session.setCategory(.playback, options: [.mixWithOthers])
                     try session.setActive(true)
                     
                     let audioPlayer = try AVAudioPlayer(data: rawSound.data)
@@ -237,7 +237,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                         audioPlayer.rate = Float(rate)
                     }
 
-                    try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+                    try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
 
                     if (audioPlayer.play()) {
                         streamsCount[soundId] = currentCount + 1
