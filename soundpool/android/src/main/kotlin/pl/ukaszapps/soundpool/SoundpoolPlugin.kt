@@ -129,22 +129,30 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
     private fun createSoundpool() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         val usage = when (streamType) {
             AudioManager.STREAM_RING -> AudioAttributes.USAGE_NOTIFICATION_RINGTONE
-            AudioManager.STREAM_ALARM -> android.media.AudioAttributes.USAGE_ALARM
-            AudioManager.STREAM_NOTIFICATION -> android.media.AudioAttributes.USAGE_NOTIFICATION
-            else -> android.media.AudioAttributes.USAGE_GAME
+            AudioManager.STREAM_ALARM -> AudioAttributes.USAGE_ALARM
+            AudioManager.STREAM_NOTIFICATION -> AudioAttributes.USAGE_NOTIFICATION
+            else -> AudioAttributes.USAGE_GAME
         }
-
+    
+        val contentType = when (streamType) {
+            AudioManager.STREAM_RING -> AudioAttributes.CONTENT_TYPE_SONIFICATION
+            AudioManager.STREAM_ALARM -> AudioAttributes.CONTENT_TYPE_SONIFICATION
+            AudioManager.STREAM_NOTIFICATION -> AudioAttributes.CONTENT_TYPE_SONIFICATION
+            else -> AudioAttributes.CONTENT_TYPE_MUSIC
+        }
+    
         val attributes = AudioAttributes.Builder()
-        .setUsage(AudioAttributes.USAGE_GAME)  // 使用USAGE_GAME
-        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-        .build()
-
+            .setUsage(usage)
+            .setContentType(contentType)
+            .build()
+    
         SoundPool.Builder()
-                .setMaxStreams(maxStreams)
-                .setAudioAttributes(attributes)
-                .build()
+            .setMaxStreams(maxStreams)
+            .setAudioAttributes(attributes)
+            .build()
     } else {
-        SoundPool(maxStreams, AudioManager.STREAM_MUSIC, 1)
+        @Suppress("DEPRECATION")
+        SoundPool(maxStreams, streamType, 1)
     }.apply {
         setOnLoadCompleteListener { _, sampleId, status ->
             val resultCallback = loadingSoundsMap[sampleId]
@@ -237,8 +245,14 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                 val rate: Double = arguments["rate"] as Double? ?: 1.0
                 val volumeInfo = volumeSettingsForSoundId(soundId = soundId)
                 runBg {
-                    val streamId = soundPool.play(soundId, volumeSet[0] ?: 1.0f, volumeSet[0] ?: 1.0f, 0,
-                            repeat, rate.toFloat())
+                    val streamId = soundPool.play(
+                        soundId, 
+                        volumeInfo.left,
+                        volumeInfo.right, 
+                        1,
+                        repeat, 
+                        rate.toFloat()
+                    )
                     ui {
                         result.success(streamId)
                     }
