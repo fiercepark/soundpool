@@ -25,14 +25,10 @@ internal val loadExecutor: Executor = Executors.newCachedThreadPool()
 internal val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
 
 class SoundpoolPlugin : MethodCallHandler, FlutterPlugin {
-    companion object {
-        // @Suppress("unused")
-        // @JvmStatic
-        // fun registerWith(registrar: Registrar) {
-        //     var pool = SoundpoolPlugin()
-        //     pool.onRegister(registrar.context(), registrar.messenger())
-        // }
+    private lateinit var channel: MethodChannel
+    private lateinit var application: Context
 
+    companion object {
         private const val CHANNEL_NAME = "pl.ukaszapps/soundpool"
     }
 
@@ -51,12 +47,9 @@ class SoundpoolPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel.setMethodCallHandler(null)
         wrappers.forEach { it.dispose() }
         wrappers.clear()
     }
-
-    private lateinit var  application : Context
 
     private val wrappers: MutableList<SoundpoolWrapper> = mutableListOf()
 
@@ -95,15 +88,6 @@ class SoundpoolPlugin : MethodCallHandler, FlutterPlugin {
                 wrappers[poolIndex].onMethodCall(call, result)
             }
         }
-    }
-
-    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        onRegister(binding.applicationContext, binding.binaryMessenger)
-    }
-
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        wrappers.forEach { it.dispose() }
-        wrappers.clear()
     }
 
 }
