@@ -14,7 +14,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URI
@@ -27,24 +26,34 @@ internal val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
 
 class SoundpoolPlugin : MethodCallHandler, FlutterPlugin {
     companion object {
-        @Suppress("unused")
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            var pool = SoundpoolPlugin()
-            pool.onRegister(registrar.context(), registrar.messenger())
-        }
+        // @Suppress("unused")
+        // @JvmStatic
+        // fun registerWith(registrar: Registrar) {
+        //     var pool = SoundpoolPlugin()
+        //     pool.onRegister(registrar.context(), registrar.messenger())
+        // }
 
         private const val CHANNEL_NAME = "pl.ukaszapps/soundpool"
     }
 
-    private fun onRegister(context: Context,  messenger: BinaryMessenger) {
-        application = context.applicationContext
-        val channel = MethodChannel(messenger, CHANNEL_NAME)
-
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        application = binding.applicationContext
+        channel = MethodChannel(binding.binaryMessenger, CHANNEL_NAME)
         channel.setMethodCallHandler(this)
 
-        // clearing temporary files from previous session
-        with(application.cacheDir) { this?.list { _, name -> name.matches("sound(.*)pool".toRegex()) }?.forEach { File(this, it).delete() } }
+        with(application.cacheDir) { 
+            this?.list { _, name -> 
+                name.matches("sound(.*)pool".toRegex()) 
+            }?.forEach { 
+                File(this, it).delete() 
+            } 
+        }
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+        wrappers.forEach { it.dispose() }
+        wrappers.clear()
     }
 
     private lateinit var  application : Context
